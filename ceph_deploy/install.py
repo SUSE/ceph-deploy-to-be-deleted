@@ -186,7 +186,6 @@ def install(args):
                 args.adjust_repos,
                 components=components,
             )
-
         # Check the ceph version we just installed
         hosts.common.ceph_version(distro.conn)
         distro.conn.exit()
@@ -445,92 +444,6 @@ def make(parser):
     """
 
     version = parser.add_mutually_exclusive_group()
-
-    # XXX deprecated in favor of release
-    version.add_argument(
-        '--stable',
-        nargs='?',
-        action=StoreVersion,
-        metavar='CODENAME',
-        help='[DEPRECATED] install a release known as CODENAME\
-                (done by default) (default: %(default)s)',
-    )
-
-    version.add_argument(
-        '--release',
-        nargs='?',
-        action=StoreVersion,
-        metavar='CODENAME',
-        help='install a release known as CODENAME\
-                (done by default) (default: %(default)s)',
-    )
-
-    version.add_argument(
-        '--testing',
-        nargs=0,
-        action=StoreVersion,
-        help='install the latest development release',
-    )
-
-    version.add_argument(
-        '--dev',
-        nargs='?',
-        action=StoreVersion,
-        const='master',
-        metavar='BRANCH_OR_TAG',
-        help='install a bleeding edge build from Git branch\
-                or tag (default: %(default)s)',
-    )
-
-    version.add_argument(
-        '--mon',
-        dest='install_mon',
-        action='store_true',
-        help='install the mon component only',
-    )
-
-    version.add_argument(
-        '--mds',
-        dest='install_mds',
-        action='store_true',
-        help='install the mds component only',
-    )
-
-    version.add_argument(
-        '--rgw',
-        dest='install_rgw',
-        action='store_true',
-        help='install the rgw component only',
-    )
-
-    version.add_argument(
-        '--osd',
-        dest='install_osd',
-        action='store_true',
-        help='install the osd component only',
-    )
-
-    version.add_argument(
-        '--all',
-        dest='install_all',
-        action='store_true',
-        help='install all ceph components (e.g. mon,osd,mds,rgw). This is the default',
-    )
-
-    version.add_argument(
-        '--adjust-repos',
-        dest='adjust_repos',
-        action='store_true',
-        help='install packages modifying source repos',
-    )
-
-    version.add_argument(
-        '--no-adjust-repos',
-        dest='adjust_repos',
-        action='store_false',
-        help='install packages without modifying source repos',
-    )
-
     version.set_defaults(
         func=install,
         stable=None,  # XXX deprecated in favor of release
@@ -539,12 +452,6 @@ def make(parser):
         version_kind='stable',
         adjust_repos=False,
     )
-
-    parser.add_argument(
-        '--repo',
-        action='store_true',
-        help='install repo files only (skips package installation)',
-        )
 
     parser.add_argument(
         'host',
@@ -559,21 +466,6 @@ def make(parser):
         const='PATH',
         default=None,
         help='Fetch packages and push them to hosts for a local repo mirror',
-    )
-
-    parser.add_argument(
-        '--repo-url',
-        nargs='?',
-        dest='repo_url',
-        help='specify a repo URL that mirrors/contains ceph packages',
-    )
-
-    parser.add_argument(
-        '--gpg-url',
-        nargs='?',
-        dest='gpg_url',
-        help='specify a GPG key URL to be used with custom repos\
-                (defaults to ceph.com)'
     )
 
     parser.set_defaults(
