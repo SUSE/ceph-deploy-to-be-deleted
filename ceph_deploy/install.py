@@ -137,7 +137,12 @@ def install(args):
         repo_url = os.environ.get('CEPH_DEPLOY_REPO_URL') or args.repo_url
         gpg_url = os.environ.get('CEPH_DEPLOY_GPG_URL') or args.gpg_url
         gpg_fallback = 'https://ceph.com/git/?p=ceph.git;a=blob_plain;f=keys/release.asc'
-
+        if (args.adjust_repos == True) and not repo_url:
+            LOG.error('refusing to adjust repos on host: %s, without specified repository.' % (
+                    hostname
+                )
+            )
+            continue
         if gpg_url is None and repo_url:
             LOG.warning('--gpg-url was not used, will fallback')
             LOG.warning('using GPG fallback: %s', gpg_fallback)
@@ -532,7 +537,7 @@ def make(parser):
         release=None,  # Set the default release in sanitize_args()
         dev='master',
         version_kind='stable',
-        adjust_repos=True,
+        adjust_repos=False,
     )
 
     parser.add_argument(
