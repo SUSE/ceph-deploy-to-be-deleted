@@ -417,6 +417,9 @@ def activate(args, cfg):
         if distro.is_el:
             system.enable_service(distro.conn)
 
+	if distro.distro == 'suse':
+            system.enable_service(distro.conn, 'ceph')
+
         distro.conn.exit()
 
 
