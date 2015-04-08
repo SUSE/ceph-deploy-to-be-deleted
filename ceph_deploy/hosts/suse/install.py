@@ -19,61 +19,46 @@ def install(distro, version_kind, version, adjust_repos, **kw):
 
     distro_name = None
     if distro.codename == 'Mantis':
-        distro_name = 'opensuse12.2'
+        distro_name = 'openSUSE_12.2'
 
-    if (distro.name == "SUSE Linux Enterprise Server") and (str(distro.release) == "11"):
-        distro_name = 'sles11'
+    LOG.warning('distro.codename=%s' % (distro.codename))
+    if (distro.name == "SUSE Linux Enterprise Server"):
+        if (str(distro.release) == "11"):
+           distro_name = 'SLE_11_SP3'
+        if (str(distro.release) == "12"):
+           distro_name = 'SLE_12'
 
     if distro_name == None:
         LOG.warning('Untested version of %s: assuming compatible with SUSE Linux Enterprise Server 11', distro.name)
-        distro_name = 'sles11'
+        distro_name = 'SLE_12'
 
+    LOG.warning('distro_name=%s' % (distro_name))
 
     if adjust_repos:
         # Work around code due to bug in SLE 11
         # https://bugzilla.novell.com/show_bug.cgi?id=875170
         protocol = "https"
-        if distro_name == 'sles11':
+        if distro_name == 'SLE_11_SP3':
             protocol = "http"
-        remoto.process.run(
-            distro.conn,
-            [
-                'rpm',
-                '--import',
-                "{protocol}://ceph.com/git/?p=ceph.git;a=blob_plain;f=keys/{key}.asc".format(
-                    key=key,
-                    protocol=protocol)
-            ]
-        )
+        releasePoint = "0.5"
 
         if version_kind == 'stable':
-            url = 'http://ceph.com/rpm-{version}/{distro}/'.format(
-                version=version,
-                distro=distro_name,
-                )
+            releasePoint = "0.5"
         elif version_kind == 'testing':
-            url = 'http://ceph.com/rpm-testing/{distro}/'.format(distro=distro_name)
+            releasePoint = "0.5"
         elif version_kind == 'dev':
-            url = 'http://gitbuilder.ceph.com/ceph-rpm-{distro}{release}-{machine}-basic/ref/{version}/'.format(
-                distro=distro_name,
-                release=release.split(".", 1)[0],
-                machine=machine,
-                version=version,
-                )
-
+            releasePoint = "0.5"
+        url = "http://download.suse.de/ibs/Devel:/Storage:/{release}:/Staging/{distro}/Devel:Storage:{release}:Staging.repo".format(
+                    distro=distro_name,
+                    release=releasePoint)
         remoto.process.run(
             distro.conn,
             [
-                'rpm',
-                '-Uvh',
-                '--replacepkgs',
-                '--force',
-                '--quiet',
-                '{url}ceph-release-1-0.noarch.rpm'.format(
-                    url=url,
-                    ),
-                ]
-            )
+                'zypper',
+                'ar',
+                url,
+            ]
+        )
 
     remoto.process.run(
         distro.conn,
