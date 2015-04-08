@@ -5,6 +5,8 @@ import os
 import shutil
 import tempfile
 import platform
+import pwd
+import grp
 
 
 def platform_information(_linux_distribution=None):
@@ -307,11 +309,70 @@ def zeroing(dev):
     # appears to do the trick.
     lba_size = 4096
     size = 33 * lba_size
-    return True
     with file(dev, 'wb') as f:
         f.seek(-size, os.SEEK_END)
         f.write(size*'\0')
 
+def chmod(path, mode):
+    """change file access mode"""
+    os.chmod(path, mode)
+
+def chown(path, username, groupname):
+    """change file ownership"""
+    uid = pwd.getpwnam(username).pw_uid
+    gid = grp.getgrnam(groupname).gr_gid
+    os.chown(path, uid, gid)
+
+
+
+#sysconfig manipulation
+
+def sysconfig_read(path, key, default_value=None):
+    with open(path, "r") as f:
+        for line in f:
+            stripped_line = line.strip()
+            if len(stripped_line) == 0:
+                continue
+            if stripped_line[0] == "#":
+                continue
+            splitline = stripped_line.split("=")
+            if len(splitline) < 2:
+                continue
+            if splitline[0].strip() != key:
+                continue
+            print splitline
+            value = "=".join(splitline[1:])
+            print value
+            return value.strip('"')
+    return default_value
+
+def sysconfig_write(path, key, new_value):
+    old_value = sysconfig_read(path, key)
+    newline = '\n#Added by ceph_deploy\n%s="%s"\n' % (key,new_value)
+    if old_value == None:
+        append_to_file(path, newline)
+        return
+    if old_value == new_value:
+        return
+    old_content = [line for line in open(path)]
+    with open(path, "w") as f:
+        for line in old_content:
+            
+            stripped_line = line.rstrip('\n').strip()
+            if len(stripped_line) == 0:
+                f.write(line)
+                continue
+            if stripped_line[0] == "#":
+                f.write(line)
+                continue
+            splitline = stripped_line.split("=")
+            if len(splitline) < 2:
+                f.write(line)
+                continue
+            if splitline[0].strip() != key:
+                f.write(line)
+                continue
+            f.write("#%s%s" % (line,newline))
 
 # remoto magic, needed to execute these functions remotely
 if __name__ == '__channelexec__':
