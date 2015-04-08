@@ -1,20 +1,25 @@
 from ceph_deploy.hosts import common
 from ceph_deploy.lib import remoto
+from ceph_deploy.util import systemd
 import logging
 
 LOG = logging.getLogger(__name__)
 
-
 def create(distro, args, monitor_keyring):
     hostname = distro.conn.remote_module.shortname()
     common.mon_create(distro, args, monitor_keyring, hostname)
-    if distro.init == 'systemd':  # Ubuntu uses upstart
+    if distro.init == 'systemd':
+        prefix = ""
+        if args.cluster != "ceph":
+            prefix = "%s-" % (args.cluster)
+            systemd.build_up(distro, args)
         remoto.process.run(
             distro.conn,
             [
                 'systemctl',
                 'enable',
-                'ceph-mon@{hostname}'.format(hostname=hostname)
+                '{prefix}ceph-mon@{hostname}'.format(hostname=hostname,
+                    prefix=prefix)
             ],
             timeout=7,
         )
@@ -23,7 +28,8 @@ def create(distro, args, monitor_keyring):
             [
                 'systemctl',
                 'start',
-                'ceph-mon@{hostname}'.format(hostname=hostname)
+                '{prefix}ceph-mon@{hostname}'.format(hostname=hostname,
+                    prefix=prefix)
             ],
             timeout=7,
         )
@@ -36,7 +42,7 @@ def create(distro, args, monitor_keyring):
             ],
             timeout=7,
         )
-    elif distro.init == 'sysvinit':  # Debian uses sysvinit
+    elif distro.init == 'sysvinit':
         remoto.process.run(
             distro.conn,
             [

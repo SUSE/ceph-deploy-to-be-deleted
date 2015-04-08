@@ -6,6 +6,7 @@ from ceph_deploy import hosts
 from ceph_deploy.cliutil import priority
 from ceph_deploy.lib import remoto
 from ceph_deploy.util.constants import default_components
+from ceph_deploy.util import systemd
 
 LOG = logging.getLogger(__name__)
 
@@ -382,6 +383,9 @@ def purgedata(args):
                 'rm', '-rf', '--one-file-system', '--', '/var/lib/ceph',
             ]
         )
+
+        # Tear down any custom systemd .service files.
+        systemd.teardown(distro, args)
 
         # If we failed in the previous call, then we probably have OSDs
         # still mounted, so we unmount them here
