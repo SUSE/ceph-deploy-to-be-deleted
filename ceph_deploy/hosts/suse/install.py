@@ -4,6 +4,30 @@ import logging
 LOG = logging.getLogger(__name__)
 
 
+def pkg_refresh(distro):
+    remoto.process.run(
+        distro.conn,
+        [
+            'zypper',
+            '--non-interactive',
+            '--gpg-auto-import-keys',
+            'refresh'
+            ],
+        )
+
+def pkg_install(distro, package):
+    remoto.process.run(
+        distro.conn,
+        [
+            'zypper',
+            '--non-interactive',
+            '--quiet',
+            'install',
+            package,
+            ],
+        )
+
+
 def install(distro, version_kind, version, adjust_repos):
     release = distro.release
     machine = distro.machine_type
