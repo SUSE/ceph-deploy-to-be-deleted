@@ -1,0 +1,1 @@
+fixes "ceph-deploy forces trust of new/unknown repository keys" (bnc#919965)
