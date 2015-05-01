@@ -100,7 +100,13 @@ def rgw_key_gen(conn, keypath, name):
             keypath
             ],
         )
-    print stdout, stderr, rc
+    if rc > 0:
+        for line in stderr:
+            conn.logger.error(line)
+        for line in stdout:
+            conn.logger.error(line)
+        conn.logger.error('exit code from command was: %s' % rc)
+        raise RuntimeError('Could not generate key')
     stdout, stderr, rc = remoto.process.check(
         conn,
         [
@@ -116,7 +122,13 @@ def rgw_key_gen(conn, keypath, name):
             keypath
             ],
         )
-    print stdout, stderr, rc
+    if rc > 0:
+        for line in stderr:
+            conn.logger.error(line)
+        for line in stdout:
+            conn.logger.error(line)
+        conn.logger.error('exit code from command was: %s' % rc)
+        raise RuntimeError('Could not set capabilities')
     stdout, stderr, rc = remoto.process.check(
         conn,
         [
@@ -128,7 +140,13 @@ def rgw_key_gen(conn, keypath, name):
             keypath
             ],
         )
-    print stdout, stderr, rc
+    if rc > 0:
+        for line in stderr:
+            conn.logger.error(line)
+        for line in stdout:
+            conn.logger.error(line)
+        conn.logger.error('exit code from command was: %s' % rc)
+        raise RuntimeError('Could not add auth info for %s' % name)
 
 def rgw_key_list(conn):
     stdout, stderr, rc = remoto.process.check(
