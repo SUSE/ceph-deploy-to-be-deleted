@@ -411,11 +411,14 @@ def mon_create_initial(args):
         rlogger = logging.getLogger(host)
         distro = hosts.get(host, username=args.username)
         hostname = distro.conn.remote_module.shortname()
-        if not distro.conn.remote_module.path_exists('/etc/ceph/ceph.client.admin.keyring'):
+        path_client_admin_keyring = '/etc/ceph/%s.client.admin.keyring' % (args.cluster)
+        if not distro.conn.remote_module.path_exists(path_client_admin_keyring):
             out, err, code = remoto.process.check(
                 distro.conn,
                     [
                         'ceph-create-keys',
+                        '--cluster',
+                        args.cluster,
                         '-i',
                         hostname
                     ]
