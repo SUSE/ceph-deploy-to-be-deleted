@@ -417,7 +417,8 @@ def activate(args, cfg):
         if distro.is_el:
             system.enable_service(distro.conn)
 
-	if distro.distro == 'suse':
+        if distro.distro == 'suse':
+            system.systemd_defaults_clustername(distro.conn, args.cluster)
             system.enable_service(distro.conn, 'ceph')
 
         distro.conn.exit()
