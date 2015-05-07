@@ -80,9 +80,6 @@ def detect_components(args, distro):
 def install(args):
     args = sanitize_args(args)
 
-    if args.repo:
-        return install_repo(args)
-
     if args.version_kind == 'stable':
         version = args.release
     else:

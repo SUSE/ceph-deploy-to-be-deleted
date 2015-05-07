@@ -34,32 +34,6 @@ def install(distro, version_kind, version, adjust_repos, **kw):
 
     LOG.warning('distro_name=%s' % (distro_name))
 
-    if adjust_repos:
-        # Work around code due to bug in SLE 11
-        # https://bugzilla.novell.com/show_bug.cgi?id=875170
-        protocol = "https"
-        if distro_name == 'SLE_11_SP3':
-            protocol = "http"
-        releasePoint = "0.5"
-
-        if version_kind == 'stable':
-            releasePoint = "0.5"
-        elif version_kind == 'testing':
-            releasePoint = "0.5"
-        elif version_kind == 'dev':
-            releasePoint = "0.5"
-        url = "http://download.suse.de/ibs/Devel:/Storage:/{release}:/Staging/{distro}/Devel:Storage:{release}:Staging.repo".format(
-                    distro=distro_name,
-                    release=releasePoint)
-        remoto.process.run(
-            distro.conn,
-            [
-                'zypper',
-                'ar',
-                url,
-            ]
-        )
-
     remoto.process.run(
         distro.conn,
         [
@@ -170,5 +144,4 @@ def repo_install(distro, reponame, baseurl, gpgkey, **kw):
     if install_ceph:
         # Before any install, make sure we have `wget`
         pkg_managers.zypper(distro.conn, 'wget')
-
         pkg_managers.zypper(distro.conn, 'ceph')
