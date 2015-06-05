@@ -80,7 +80,11 @@ def detect_components(args, distro):
 
 def install(args):
     args = sanitize_args(args)
-
+    if (args.adjust_repos == True) and not repo_url:
+        LOG.error('refusing to adjust repos on host: %s, without specified repository.' % (
+                hostname
+            )
+        )
     if args.repo:
         return install_repo(args)
 
@@ -541,7 +545,7 @@ def make(parser):
         release=None,  # Set the default release in sanitize_args()
         dev='master',
         version_kind='stable',
-        adjust_repos=True,
+        adjust_repos=False,
     )
 
     parser.add_argument(
