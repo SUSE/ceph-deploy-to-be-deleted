@@ -30,50 +30,6 @@ def install(distro, version_kind, version, adjust_repos, **kw):
         distro_name = 'sles11'
 
 
-    if adjust_repos:
-        # Work around code due to bug in SLE 11
-        # https://bugzilla.novell.com/show_bug.cgi?id=875170
-        protocol = "https"
-        if distro_name == 'sles11':
-            protocol = "http"
-        remoto.process.run(
-            distro.conn,
-            [
-                'rpm',
-                '--import',
-                gpg.url(key, protocol=protocol)
-            ]
-        )
-
-        if version_kind == 'stable':
-            url = 'http://ceph.com/rpm-{version}/{distro}/'.format(
-                version=version,
-                distro=distro_name,
-                )
-        elif version_kind == 'testing':
-            url = 'http://ceph.com/rpm-testing/{distro}/'.format(distro=distro_name)
-        elif version_kind == 'dev':
-            url = 'http://gitbuilder.ceph.com/ceph-rpm-{distro}{release}-{machine}-basic/ref/{version}/'.format(
-                distro=distro_name,
-                release=release.split(".", 1)[0],
-                machine=machine,
-                version=version,
-                )
-
-        remoto.process.run(
-            distro.conn,
-            [
-                'rpm',
-                '-Uvh',
-                '--replacepkgs',
-                '--force',
-                '--quiet',
-                '{url}ceph-release-1-0.noarch.rpm'.format(
-                    url=url,
-                    ),
-                ]
-            )
-
     remoto.process.run(
         distro.conn,
         [
