@@ -13,7 +13,7 @@ from ceph_deploy import conf, exc, hosts, mon
 from ceph_deploy.util import constants, system
 from ceph_deploy.cliutil import priority
 from ceph_deploy.lib import remoto
-
+from ceph_deploy.util import systemd
 
 LOG = logging.getLogger(__name__)
 
@@ -343,7 +343,7 @@ def prepare(args, cfg, activate_prepared_disk):
 
             LOG.debug('Preparing host %s disk %s journal %s activate %s',
                       hostname, disk, journal, activate_prepared_disk)
-
+            systemd.build_up(distro, args)
             if disk_is_dir:
                 prepare_disk_dir(
                     distro.conn,
