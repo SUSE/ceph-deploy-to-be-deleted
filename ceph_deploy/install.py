@@ -139,55 +139,12 @@ def install(args):
 
         cd_conf = getattr(args, 'cd_conf', None)
 
-        # custom repo arguments
-        repo_url = os.environ.get('CEPH_DEPLOY_REPO_URL') or args.repo_url
-        gpg_url = os.environ.get('CEPH_DEPLOY_GPG_URL') or args.gpg_url
-        gpg_fallback = gpg.url('release')
-
-        if gpg_url is None and repo_url:
-            LOG.warning('--gpg-url was not used, will fallback')
-            LOG.warning('using GPG fallback: %s', gpg_fallback)
-            gpg_url = gpg_fallback
-
-        if args.local_mirror:
-            remoto.rsync(hostname, args.local_mirror, '/opt/ceph-deploy/repo', distro.conn.logger, sudo=True)
-            repo_url = 'file:///opt/ceph-deploy/repo'
-            gpg_url = 'file:///opt/ceph-deploy/repo/release.asc'
-
-        if repo_url:  # triggers using a custom repository
-            # the user used a custom repo url, this should override anything
-            # we can detect from the configuration, so warn about it
-            if cd_conf:
-                if cd_conf.get_default_repo():
-                    rlogger.warning('a default repo was found but it was \
-                        overridden on the CLI')
-                if args.release in cd_conf.get_repos():
-                    rlogger.warning('a custom repo was found but it was \
-                        overridden on the CLI')
-
-            rlogger.info('using custom repository location: %s', repo_url)
-            distro.mirror_install(
-                distro,
-                repo_url,
-                gpg_url,
-                args.adjust_repos,
-                components=components,
-            )
-
-        # Detect and install custom repos here if needed
-        elif should_use_custom_repo(args, cd_conf, repo_url):
-            LOG.info('detected valid custom repositories from config file')
-            custom_repo(distro, args, cd_conf, rlogger)
-
-        else:  # otherwise a normal installation
-            distro.install(
-                distro,
-                args.version_kind,
-                version,
-                args.adjust_repos,
-                components=components,
-            )
-
+        distro.install(
+            distro,
+            args.version_kind,
+            version,
+            args.adjust_repos
+        )
         # Check the ceph version we just installed
         hosts.common.ceph_version(distro.conn)
         distro.conn.exit()
@@ -447,42 +404,6 @@ def make(parser):
 
     version = parser.add_mutually_exclusive_group()
 
-    # XXX deprecated in favor of release
-    version.add_argument(
-        '--stable',
-        nargs='?',
-        action=StoreVersion,
-        metavar='CODENAME',
-        help='[DEPRECATED] install a release known as CODENAME\
-                (done by default) (default: %(default)s)',
-    )
-
-    version.add_argument(
-        '--release',
-        nargs='?',
-        action=StoreVersion,
-        metavar='CODENAME',
-        help='install a release known as CODENAME\
-                (done by default) (default: %(default)s)',
-    )
-
-    version.add_argument(
-        '--testing',
-        nargs=0,
-        action=StoreVersion,
-        help='install the latest development release',
-    )
-
-    version.add_argument(
-        '--dev',
-        nargs='?',
-        action=StoreVersion,
-        const='master',
-        metavar='BRANCH_OR_TAG',
-        help='install a bleeding edge build from Git branch\
-                or tag (default: %(default)s)',
-    )
-
     version.add_argument(
         '--mon',
         dest='install_mon',
@@ -525,20 +446,6 @@ def make(parser):
         help='install all ceph components (e.g. mon,osd,mds,rgw). This is the default',
     )
 
-    version.add_argument(
-        '--adjust-repos',
-        dest='adjust_repos',
-        action='store_true',
-        help='install packages modifying source repos',
-    )
-
-    version.add_argument(
-        '--no-adjust-repos',
-        dest='adjust_repos',
-        action='store_false',
-        help='install packages without modifying source repos',
-    )
-
     version.set_defaults(
         func=install,
         stable=None,  # XXX deprecated in favor of release
@@ -547,12 +454,6 @@ def make(parser):
         version_kind='stable',
         adjust_repos=False,
     )
-
-    parser.add_argument(
-        '--repo',
-        action='store_true',
-        help='install repo files only (skips package installation)',
-        )
 
     parser.add_argument(
         'host',
@@ -567,21 +468,6 @@ def make(parser):
         const='PATH',
         default=None,
         help='Fetch packages and push them to hosts for a local repo mirror',
-    )
-
-    parser.add_argument(
-        '--repo-url',
-        nargs='?',
-        dest='repo_url',
-        help='specify a repo URL that mirrors/contains ceph packages',
-    )
-
-    parser.add_argument(
-        '--gpg-url',
-        nargs='?',
-        dest='gpg_url',
-        help='specify a GPG key URL to be used with custom repos\
-                (defaults to ceph.com)'
     )
 
     parser.set_defaults(
