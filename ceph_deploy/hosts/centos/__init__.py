@@ -17,3 +17,12 @@ def choose_init():
     Returns the name of a init system (upstart, sysvinit ...).
     """
     return 'sysvinit'
+
+
+def service_mapping(service):
+    """
+    Select the service name
+    """
+    service_mapping = { "apache" : "httpd",
+        "ceph-rgw" : "ceph-rgw" }
+    return service_mapping.get(service,service)

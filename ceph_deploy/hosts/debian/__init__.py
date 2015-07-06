@@ -19,3 +19,11 @@ def choose_init():
     if distro.lower() == 'ubuntu':
         return 'upstart'
     return 'sysvinit'
+
+
+def service_mapping(service):
+    """
+    Select the service name
+    """
+    service_mapping = { }
+    return service_mapping.get(service,service)

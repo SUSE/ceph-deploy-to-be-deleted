@@ -1,6 +1,6 @@
 import mon  # noqa
 import pkg  # noqa
-from install import install, mirror_install, repo_install  # noqa
+from install import install, mirror_install, repo_install # noqa
 from uninstall import uninstall  # noqa
 import logging
 
@@ -24,3 +24,12 @@ def choose_init():
         '13.1' : 'systemd',             # openSUSE_13.1
         }
     return init_mapping.get(release, 'sysvinit')
+
+
+def service_mapping(service):
+    """
+    Select the service name
+    """
+    service_mapping = { "apache" : "apache2",
+        "ceph-rgw" : "ceph-rgw" }
+    return service_mapping.get(service,service)
