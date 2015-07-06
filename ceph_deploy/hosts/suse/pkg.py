@@ -13,3 +13,8 @@ def remove(distro, packages):
         distro.conn,
         packages
     )
+
+def update(distro):
+    return pkg_managers.zypper_update(
+        distro.conn
+    )
