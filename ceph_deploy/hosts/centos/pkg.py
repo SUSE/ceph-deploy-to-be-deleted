@@ -13,3 +13,9 @@ def remove(distro, packages):
         distro.conn,
         packages
     )
+
+def update(distro):
+    return pkg_managers.yum_clean(
+        distro.conn,
+        "expire-cache"
+    )
